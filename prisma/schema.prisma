@@ -1,0 +1,220 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  phone        String?
+  role         String    @default("CUSTOMER") // CUSTOMER | ADMIN
+  locale       String    @default("fr")
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  addresses    Address[]
+  cart         Cart?
+  orders       Order[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  nameFr      String
+  nameEn      String
+  descriptionFr String?
+  descriptionEn String?
+  image       String?
+  products    Product[]
+}
+
+model Product {
+  id                String            @id @default(cuid())
+  slug              String            @unique
+  nameFr            String
+  nameEn            String
+  descriptionFr     String
+  descriptionEn     String
+  basePriceMillimes Int               // e.g. 89000 = 89.000 TND ($89)
+  compareAtMillimes Int?              // e.g. 110000 = 110.000 TND (struck through price)
+  categoryId        String?
+  category          Category?         @relation(fields: [categoryId], references: [id])
+  isPublished       Boolean           @default(true)
+  isFeatured        Boolean           @default(false)
+  isNew             Boolean           @default(false)
+  images            ProductImage[]
+  spinFrames        SpinFrame[]
+  variants          Variant[]
+  discounts         DiscountProduct[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  publicId  String  @default("")
+  altFr     String?
+  altEn     String?
+  position  Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model SpinFrame {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  publicId  String  @default("")
+  order     Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@unique([productId, order])
+}
+
+model Variant {
+  id                    String      @id @default(cuid())
+  productId             String
+  size                  String      // XS, S, M, L, XL, XXL
+  color                 String      // White, Black, Grey, Cream, Pink
+  colorHex              String?     // e.g. #FFFFFF
+  sku                   String      @unique
+  stock                 Int         @default(0)
+  priceOverrideMillimes Int?
+  product               Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems             CartItem[]
+  orderItems            OrderItem[]
+  @@unique([productId, size, color])
+}
+
+model Discount {
+  id         String            @id @default(cuid())
+  name       String
+  code       String?           @unique
+  type       String            @default("PERCENT") // PERCENT | FIXED
+  value      Int               // percent (0-100) or millimes
+  startsAt   DateTime          @default(now())
+  endsAt     DateTime?
+  usageLimit Int?
+  usageCount Int               @default(0)
+  isActive   Boolean           @default(true)
+  products   DiscountProduct[]
+  categoryId String?
+}
+
+model DiscountProduct {
+  discountId String
+  productId  String
+  discount   Discount @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@id([discountId, productId])
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int      @default(1)
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant   Variant  @relation(fields: [variantId], references: [id])
+  createdAt DateTime @default(now())
+  @@unique([cartId, variantId])
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  fullName    String
+  phone       String
+  line1       String
+  line2       String?
+  city        String
+  governorate String   @default("Tunis")
+  postalCode  String?
+  isDefault   Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+}
+
+model Order {
+  id               String             @id @default(cuid())
+  number           String             @unique // e.g. ORD-000123
+  userId           String?
+  user             User?              @relation(fields: [userId], references: [id])
+  status           String             @default("PENDING") // PENDING | CONFIRMED | PROCESSING | SHIPPED | DELIVERED | CANCELLED
+  subtotalMillimes Int
+  discountMillimes Int                @default(0)
+  shippingMillimes Int                @default(0)
+  totalMillimes    Int
+  discountCode     String?
+  addressId        String?
+  address          Address?           @relation(fields: [addressId], references: [id])
+  contactName      String
+  contactPhone     String
+  contactEmail     String
+  shippingAddress  String?
+  city             String?
+  postalCode       String?
+  paymentMethod    String             @default("COD") // COD | CARD | PAYPAL
+  notes            String?
+  confirmedAt      DateTime?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  cashCollectedAt  DateTime?
+  cancelledAt      DateTime?
+  createdAt        DateTime           @default(now())
+  items            OrderItem[]
+  statusHistory    OrderStatusEvent[]
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  variantId    String
+  productName  String
+  size         String
+  color        String
+  quantity     Int
+  unitMillimes Int
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant      Variant @relation(fields: [variantId], references: [id])
+}
+
+model OrderStatusEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  status    String
+  changedBy String   @default("system")
+  note      String?
+  createdAt DateTime @default(now())
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  email     String?
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}

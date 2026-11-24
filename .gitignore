@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.*
+!.env.example
+*.log
+data/
+prisma/dev.db
+.DS_Store
+.netlify
+.vercel
+tsconfig.tsbuildinfo
