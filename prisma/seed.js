@@ -217,6 +217,44 @@ async function main() {
         '/hoodies/models/blank-model/men/white/whiehoodiesleeves.png'
       ],
     },
+    {
+      slug: 'crimson-maple-white-hoodie',
+      nameEn: 'Crimson Maple White 450GSM Hoodie',
+      nameFr: 'Sweat Érable Rouge Blanc 450GSM',
+      descriptionEn: 'Unbleached white heavyweight hoodie tailored with cascading Japanese red maple leaf branches across shoulder and back. Crafted from 450GSM organic brushed cotton with relaxed street fit.',
+      descriptionFr: 'Sweat à capuche lourd blanc naturel orné de branches de feuilles d’érable rouge japonais sur l’épaule et le dos. Confectionné en coton brossé biologique 450GSM coupe décontractée.',
+      basePriceMillimes: 89000,
+      compareAtMillimes: 110000,
+      categoryId: categories.hoodies.id,
+      isFeatured: true,
+      isNew: true,
+      color: 'White',
+      colorHex: '#F2EDE8',
+      images: [
+        '/hoodies/models/men/red maple/white hoodie  Red Maple Leaf Hoodie Lookbook front .png',
+        '/hoodies/models/men/red maple/white hoodie Maple Leaf Hoodie Back View.png',
+        '/hoodies/models/men/red maple/white hoodie Red Maple Hoodie Detail Collage.png'
+      ],
+    },
+    {
+      slug: 'crimson-maple-black-hoodie',
+      nameEn: 'Crimson Maple Black 450GSM Hoodie',
+      nameFr: 'Sweat Érable Rouge Noir 450GSM',
+      descriptionEn: 'Midnight black 450GSM cotton hoodie featuring rich scarlet maple foliage trailing from collar to drop-shoulders and back. Reinforced ribbed cuffs and kangaroo pocket.',
+      descriptionFr: 'Sweat à capuche en coton noir profond 450GSM orné de feuillage d’érable écarlate du col aux épaules tombantes et au dos. Poignets côtelés renforcés et poche kangourou.',
+      basePriceMillimes: 89000,
+      compareAtMillimes: 110000,
+      categoryId: categories.hoodies.id,
+      isFeatured: true,
+      isNew: true,
+      color: 'Deep Black',
+      colorHex: '#171717',
+      images: [
+        '/hoodies/models/men/red maple/Black Hoodie, Red Maple Leaves front.png',
+        '/hoodies/models/men/red maple/black hoodie Red Maple Hoodie Streetwear back .png',
+        '/hoodies/models/men/red maple/black hoodie Red Maple Hoodie Lookbook Collage.png'
+      ],
+    },
   ];
 
   const createdVariants = [];
